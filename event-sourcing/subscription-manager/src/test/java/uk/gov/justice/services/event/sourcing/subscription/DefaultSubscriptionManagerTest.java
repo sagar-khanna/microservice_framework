@@ -23,13 +23,13 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class DefaultSubscriptionManagerTest {
 
     @Mock
+    private InterceptorChainProcessor interceptorChainProcessor;
+
+    @Mock
     private Subscription subscription;
 
     @Mock
     private EventSource eventSource;
-
-    @Mock
-    private InterceptorChainProcessor interceptorChainProcessor;
 
     @InjectMocks
     private DefaultSubscriptionManager defaultSubscriptionManager;
@@ -41,7 +41,7 @@ public class DefaultSubscriptionManagerTest {
     public void shouldProcessJsonEnvelope() {
         final JsonEnvelope jsonEnvelope = mock(JsonEnvelope.class);
 
-        defaultSubscriptionManager.process(jsonEnvelope);
+        defaultSubscriptionManager.process(jsonEnvelope, interceptorChainProcessor);
 
         verify(interceptorChainProcessor).process(interceptorContextArgumentCaptor.capture());
 

@@ -18,6 +18,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -43,6 +44,7 @@ import uk.gov.justice.services.adapter.messaging.JsonSchemaValidationInterceptor
 import uk.gov.justice.services.adapter.messaging.SubscriptionJmsProcessor;
 import uk.gov.justice.services.core.annotation.Adapter;
 import uk.gov.justice.services.core.annotation.Component;
+import uk.gov.justice.services.core.interceptor.InterceptorChainProcessor;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.subscription.SubscriptionManager;
 import uk.gov.justice.services.test.utils.core.compiler.JavaCompilerUtility;
@@ -805,14 +807,15 @@ public class SubscriptionJmsEndpointGeneratorTest {
 
         final MessageListener jmsListener = (MessageListener) object;
         final Message message = mock(Message.class);
+        final InterceptorChainProcessor interceptorChainProcessor = mock(InterceptorChainProcessor.class);
 
         jmsListener.onMessage(message);
 
         final ArgumentCaptor<SubscriptionManager> consumerCaptor = ArgumentCaptor.forClass(SubscriptionManager.class);
-        verify(subscriptionJmsProcessor).process(consumerCaptor.capture(), eq(message));
+        verify(subscriptionJmsProcessor).process(eq(message), consumerCaptor.capture(), any(InterceptorChainProcessor.class));
 
         final JsonEnvelope envelope = mock(JsonEnvelope.class);
-        consumerCaptor.getValue().process(envelope);
+        consumerCaptor.getValue().process(envelope, interceptorChainProcessor);
     }
 
     @Test

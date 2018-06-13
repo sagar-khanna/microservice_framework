@@ -89,8 +89,6 @@ public class SubscriptionManagerProducerIT {
         assertThat(((Subscription) subscription.get()).getName(), is(SUBSCRIPTION_NAME));
         assertThat(((Subscription) subscription.get()).getEventSourceName(), is(EVENT_SOURCE_NAME));
 
-        final Optional<Object> interceptorChainProcessor = fieldValue(defaultSubscriptionManager, "interceptorChainProcessor");
-        assertThat(interceptorChainProcessor.isPresent(), is(true));
     }
 
     @ApplicationScoped

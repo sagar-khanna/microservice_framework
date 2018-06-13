@@ -16,6 +16,7 @@ import uk.gov.justice.services.adapter.messaging.JmsLoggerMetadataInterceptor;
 import uk.gov.justice.services.adapter.messaging.JsonSchemaValidationInterceptor;
 import uk.gov.justice.services.adapter.messaging.SubscriptionJmsProcessor;
 import uk.gov.justice.services.core.annotation.Adapter;
+import uk.gov.justice.services.core.interceptor.InterceptorChainProcessor;
 import uk.gov.justice.services.generators.commons.config.CommonGeneratorProperties;
 import uk.gov.justice.services.messaging.logging.LoggerUtils;
 import uk.gov.justice.services.subscription.SubscriptionManager;
@@ -60,6 +61,7 @@ public class MessageListenerCodeGenerator {
     private static final String SUBSCRIPTION_MANAGER = "subscriptionManager";
     private static final String JMS_PROCESSOR_FIELD = "subscriptionJmsProcessor";
     private static final String LOGGER_FIELD = "LOGGER";
+    private static final String INTERCEPTOR_CHAIN_PROCESSOR = "interceptorChainProcessor";
 
     private static final String DESTINATION_TYPE = "destinationType";
     private static final String DESTINATION_LOOKUP = "destinationLookup";
@@ -119,6 +121,8 @@ public class MessageListenerCodeGenerator {
                             .addModifiers(PRIVATE, STATIC, FINAL)
                             .initializer("$T.getLogger($L.class)", LoggerFactory.class, className)
                             .build())
+                    .addField(FieldSpec.builder(ClassName.get(InterceptorChainProcessor.class), INTERCEPTOR_CHAIN_PROCESSOR)
+                            .addAnnotation(Inject.class).build())
                     .addField(FieldSpec.builder(ClassName.get(SubscriptionManager.class), SUBSCRIPTION_MANAGER)
                             .addAnnotation(Inject.class)
                             .addAnnotation(AnnotationSpec.builder(SubscriptionName.class)
@@ -195,10 +199,11 @@ public class MessageListenerCodeGenerator {
                         .build())
                 .addCode(CodeBlock.builder()
                         .addStatement("$T.trace(LOGGER, () -> \"Received JMS message\")", LoggerUtils.class)
-                        .addStatement("$L.process($L, $L)",
+                        .addStatement("$L.process($L, $L, $L)",
                                 JMS_PROCESSOR_FIELD,
+                                messageFieldName,
                                 SUBSCRIPTION_MANAGER,
-                                messageFieldName)
+                                INTERCEPTOR_CHAIN_PROCESSOR)
                         .build())
                 .build();
     }

@@ -2,6 +2,7 @@ package uk.gov.justice.services.adapter.messaging;
 
 import static java.lang.String.format;
 
+import uk.gov.justice.services.core.interceptor.InterceptorChainProcessor;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.jms.EnvelopeConverter;
 import uk.gov.justice.services.messaging.logging.JmsMessageLoggerHelper;
@@ -36,7 +37,9 @@ public class DefaultSubscriptionJmsProcessor implements SubscriptionJmsProcessor
     JmsMessageLoggerHelper jmsMessageLoggerHelper;
 
     @Override
-    public void process(final SubscriptionManager subscriptionManager, final Message message) {
+    public void process(final Message message,
+                        final SubscriptionManager subscriptionManager,
+                        final InterceptorChainProcessor interceptorChainProcessor) {
 
         traceLogger.trace(LOGGER, () -> format("Processing JMS message: %s", jmsMessageLoggerHelper.toJmsTraceString(message)));
 
@@ -51,7 +54,7 @@ public class DefaultSubscriptionJmsProcessor implements SubscriptionJmsProcessor
 
         final JsonEnvelope jsonEnvelope = envelopeConverter.fromMessage((TextMessage) message);
         traceLogger.trace(LOGGER, () -> format("JMS message converted to envelope: %s", jsonEnvelope));
-        subscriptionManager.process(jsonEnvelope);
+        subscriptionManager.process(jsonEnvelope, interceptorChainProcessor);
         traceLogger.trace(LOGGER, () -> format("JMS message processed: %s", jsonEnvelope));
     }
 }

@@ -106,6 +106,9 @@ public class MessageListenerCodeGeneratorTest {
                 "  private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(uk.gov.moj.base.package.name.MyContextEventListenerMyContextHandlerCommandJmsListener.class);\n" +
                 "\n" +
                 "  @javax.inject.Inject\n" +
+                "  uk.gov.justice.services.core.interceptor.InterceptorChainProcessor interceptorChainProcessor;\n" +
+                "\n" +
+                "  @javax.inject.Inject\n" +
                 "  @uk.gov.justice.services.subscription.annotation.SubscriptionName(\"subscription\")\n" +
                 "  uk.gov.justice.services.subscription.SubscriptionManager subscriptionManager;\n" +
                 "\n" +
@@ -115,7 +118,7 @@ public class MessageListenerCodeGeneratorTest {
                 "  @java.lang.Override\n" +
                 "  public void onMessage(javax.jms.Message message) {\n" +
                 "    uk.gov.justice.services.messaging.logging.LoggerUtils.trace(LOGGER, () -> \"Received JMS message\");\n" +
-                "    subscriptionJmsProcessor.process(subscriptionManager, message);\n" +
+                "    subscriptionJmsProcessor.process(message, subscriptionManager, interceptorChainProcessor);\n" +
                 "  }\n" +
                 "}\n"));
     }
@@ -190,6 +193,9 @@ public class MessageListenerCodeGeneratorTest {
                 "  private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(uk.gov.moj.base.package.name.MyContextCommandHandlerMyContextHandlerCommandJmsListener.class);\n" +
                 "\n" +
                 "  @javax.inject.Inject\n" +
+                "  uk.gov.justice.services.core.interceptor.InterceptorChainProcessor interceptorChainProcessor;\n" +
+                "\n" +
+                "  @javax.inject.Inject\n" +
                 "  @uk.gov.justice.services.subscription.annotation.SubscriptionName(\"subscription\")\n" +
                 "  uk.gov.justice.services.subscription.SubscriptionManager subscriptionManager;\n" +
                 "\n" +
@@ -199,7 +205,7 @@ public class MessageListenerCodeGeneratorTest {
                 "  @java.lang.Override\n" +
                 "  public void onMessage(javax.jms.Message message) {\n" +
                 "    uk.gov.justice.services.messaging.logging.LoggerUtils.trace(LOGGER, () -> \"Received JMS message\");\n" +
-                "    subscriptionJmsProcessor.process(subscriptionManager, message);\n" +
+                "    subscriptionJmsProcessor.process(message, subscriptionManager, interceptorChainProcessor);\n" +
                 "  }\n" +
                 "}\n"));
     }
@@ -274,6 +280,9 @@ public class MessageListenerCodeGeneratorTest {
                 "  private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(uk.gov.moj.base.package.name.MyContextCommandApiMyContextHandlerCommandJmsListener.class);\n" +
                 "\n" +
                 "  @javax.inject.Inject\n" +
+                "  uk.gov.justice.services.core.interceptor.InterceptorChainProcessor interceptorChainProcessor;\n" +
+                "\n" +
+                "  @javax.inject.Inject\n" +
                 "  @uk.gov.justice.services.subscription.annotation.SubscriptionName(\"subscription\")\n" +
                 "  uk.gov.justice.services.subscription.SubscriptionManager subscriptionManager;\n" +
                 "\n" +
@@ -283,7 +292,7 @@ public class MessageListenerCodeGeneratorTest {
                 "  @java.lang.Override\n" +
                 "  public void onMessage(javax.jms.Message message) {\n" +
                 "    uk.gov.justice.services.messaging.logging.LoggerUtils.trace(LOGGER, () -> \"Received JMS message\");\n" +
-                "    subscriptionJmsProcessor.process(subscriptionManager, message);\n" +
+                "    subscriptionJmsProcessor.process(message, subscriptionManager, interceptorChainProcessor);\n" +
                 "  }\n" +
                 "}\n"));
     }
