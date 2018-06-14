@@ -17,7 +17,6 @@ import uk.gov.justice.services.core.dispatcher.EnvelopePayloadTypeConverter;
 import uk.gov.justice.services.core.dispatcher.JsonEnvelopeRepacker;
 import uk.gov.justice.services.core.interceptor.DefaultInterceptorChainProcessor;
 import uk.gov.justice.services.core.interceptor.InterceptorCache;
-import uk.gov.justice.services.core.interceptor.InterceptorChainProcessor;
 import uk.gov.justice.services.core.interceptor.InterceptorChainProcessorProducer;
 import uk.gov.justice.services.event.sourcing.subscription.DefaultSubscriptionManager;
 import uk.gov.justice.services.event.sourcing.subscription.ServiceComponentLiteral;
@@ -63,7 +62,8 @@ import org.junit.runner.RunWith;
         DefaultInterceptorChainProcessor.class,
         SubscriptionManagerProducerIT.TestEventSourceProducer.class,
         SubscriptionManagerProducerIT.TestClass.class,
-        SubscriptionManagerProducerIT.TestInterceptorChainProcessorProducer.class
+        DefaultInterceptorChainProcessor.class,
+        InterceptorChainProcessorProducer.class
 })
 public class SubscriptionManagerProducerIT {
 
@@ -71,7 +71,7 @@ public class SubscriptionManagerProducerIT {
     private static final String EVENT_SOURCE_NAME = "private.event.source";
 
     @Inject
-    TestInterceptorChainProcessorProducer testInterceptorChainProcessorProducer;
+    InterceptorChainProcessorProducer testInterceptorChainProcessorProducer;
 
     @Inject
     TestEventSourceProducer testEventSourceProducer;
@@ -134,31 +134,6 @@ public class SubscriptionManagerProducerIT {
 
         public EventSource getEventSource() {
             return eventSource;
-        }
-    }
-
-    @ApplicationScoped
-    public static class TestInterceptorChainProcessorProducer {
-
-        private InterceptorChainProcessor interceptorChainProcessor;
-
-        @Inject
-        QualifierAnnotationExtractor qualifierAnnotationExtractor;
-
-        @Produces
-        public InterceptorChainProcessor produceProcessor(final InjectionPoint injectionPoint) {
-            final ServiceComponent serviceComponent = qualifierAnnotationExtractor.getFrom(injectionPoint, ServiceComponent.class);
-
-            if (serviceComponent.value().equals(EVENT_LISTENER)) {
-                interceptorChainProcessor = mock(InterceptorChainProcessor.class);
-                return interceptorChainProcessor;
-            }
-
-            return null;
-        }
-
-        public InterceptorChainProcessor getInterceptorChainProcessor() {
-            return interceptorChainProcessor;
         }
     }
 }

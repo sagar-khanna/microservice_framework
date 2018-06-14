@@ -4,8 +4,10 @@ package uk.gov.justice.services.core.annotation;
 import static java.lang.String.format;
 import static java.util.Optional.empty;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.enterprise.inject.spi.InjectionPoint;
 
@@ -61,6 +63,15 @@ public final class ComponentNameUtil {
             }
         }
 
+        final Set<Annotation> annotations = injectionPoint.getQualifiers();
+        for (Annotation annotation : annotations) {
+            if (annotation.annotationType().equals(ServiceComponent.class)) {
+                return Optional.of(annotation.toString());
+            }
+            if (annotation.annotationType().equals(FrameworkComponent.class)) {
+                return Optional.of(annotation.toString());
+            }
+        }
         return empty();
     }
 
