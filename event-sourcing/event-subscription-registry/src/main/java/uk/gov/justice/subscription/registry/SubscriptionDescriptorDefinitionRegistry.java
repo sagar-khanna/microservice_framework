@@ -8,8 +8,10 @@ import uk.gov.justice.subscription.domain.subscriptiondescriptor.Subscription;
 import uk.gov.justice.subscription.domain.subscriptiondescriptor.SubscriptionDescriptorDefinition;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.stream.Stream;
 
@@ -62,5 +64,19 @@ public class SubscriptionDescriptorDefinitionRegistry {
 
     public Stream<SubscriptionDescriptorDefinition> subscriptionDescriptorDefinitions() {
         return registry.values().stream();
+    }
+
+    public String componentName(final Subscription subscription) {
+        final Set<String> keys = registry.keySet();
+        for (String key : keys) {
+            final SubscriptionDescriptorDefinition descriptorDefinition = registry.get(key);
+            final List<Subscription> subscriptionList = descriptorDefinition.getSubscriptions();
+            for (Subscription subscriptionV : subscriptionList) {
+                if (subscriptionV.getName().equalsIgnoreCase(subscription.getName())) {
+                    return key;
+                }
+            }
+        }
+        return null;
     }
 }

@@ -15,15 +15,18 @@ public class DefaultSubscriptionManager implements SubscriptionManager {
     private final Logger LOGGER = LoggerFactory.getLogger(DefaultSubscriptionManager.class);
     private final Subscription subscription;
     private final EventSource eventSource;
+    private final InterceptorChainProcessor interceptorChainProcessor;
 
     public DefaultSubscriptionManager(final Subscription subscription,
-                                      final EventSource eventSource) {
+                                      final EventSource eventSource,
+                                      final InterceptorChainProcessor interceptorChainProcessor) {
         this.subscription = subscription;
         this.eventSource = eventSource;
+        this.interceptorChainProcessor = interceptorChainProcessor;
     }
 
     @Override
-    public void process(final JsonEnvelope jsonEnvelope, final InterceptorChainProcessor interceptorChainProcessor) {
+    public void process(final JsonEnvelope jsonEnvelope) {
         interceptorChainProcessor.process(interceptorContextWithInput(jsonEnvelope));
     }
 

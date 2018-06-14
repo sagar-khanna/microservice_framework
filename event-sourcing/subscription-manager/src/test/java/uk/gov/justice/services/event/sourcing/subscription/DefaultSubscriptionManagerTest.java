@@ -41,7 +41,7 @@ public class DefaultSubscriptionManagerTest {
     public void shouldProcessJsonEnvelope() {
         final JsonEnvelope jsonEnvelope = mock(JsonEnvelope.class);
 
-        defaultSubscriptionManager.process(jsonEnvelope, interceptorChainProcessor);
+        defaultSubscriptionManager.process(jsonEnvelope);
 
         verify(interceptorChainProcessor).process(interceptorContextArgumentCaptor.capture());
 

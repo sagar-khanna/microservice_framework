@@ -3,6 +3,7 @@ package uk.gov.justice.services.event.sourcing.subscription;
 import static java.lang.String.format;
 
 import uk.gov.justice.services.core.cdi.QualifierAnnotationExtractor;
+import uk.gov.justice.services.core.interceptor.InterceptorChainProcessor;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
 import uk.gov.justice.services.subscription.SubscriptionManager;
 import uk.gov.justice.services.subscription.annotation.SubscriptionName;
@@ -30,13 +31,17 @@ public class SubscriptionManagerProducer {
 
     @Inject
     @Any
-    Instance<EventSource> eventSourceInstance;
+    private Instance<EventSource> eventSourceInstance;
 
     @Inject
-    SubscriptionDescriptorDefinitionRegistry subscriptionDescriptorRegistry;
+    @Any
+    private Instance<InterceptorChainProcessor> interceptorChainProcessors;
 
     @Inject
-    QualifierAnnotationExtractor qualifierAnnotationExtractor;
+    private SubscriptionDescriptorDefinitionRegistry subscriptionDescriptorRegistry;
+
+    @Inject
+    private QualifierAnnotationExtractor qualifierAnnotationExtractor;
 
     @Produces
     @SubscriptionName
@@ -51,12 +56,19 @@ public class SubscriptionManagerProducer {
 
     private SubscriptionManager create(final Subscription subscription) {
         LOGGER.info(format("Retrieving from subscriptionManager map : %s", subscription.getName()));
-        return new DefaultSubscriptionManager(subscription, getEventSource(subscription.getEventSourceName()));
+        final InterceptorChainProcessor interceptorChainProcessor = getInterceptorChainProcessor(subscriptionDescriptorRegistry.componentName(subscription));
+        return new DefaultSubscriptionManager(subscription, getEventSource(subscription.getEventSourceName()), interceptorChainProcessor);
     }
 
     private EventSource getEventSource(final String eventSourceName) {
         final EventSourceNameQualifier eventSourceNameQualifier = new EventSourceNameQualifier(eventSourceName);
         return eventSourceInstance.select(eventSourceNameQualifier).get();
+    }
+
+    private InterceptorChainProcessor getInterceptorChainProcessor(final String componentName) {
+        final ServiceComponentLiteral serviceComponentLiteral = new ServiceComponentLiteral(componentName);
+        final Instance<InterceptorChainProcessor> interceptorChainProcessor = interceptorChainProcessors.select(serviceComponentLiteral);
+        return interceptorChainProcessor.get();
     }
 
 }

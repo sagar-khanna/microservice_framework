@@ -8,16 +8,19 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.fieldValue;
 
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
-import uk.gov.justice.services.core.annotation.Adapter;
+import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.cdi.LoggerProducer;
 import uk.gov.justice.services.core.cdi.QualifierAnnotationExtractor;
 import uk.gov.justice.services.core.dispatcher.DispatcherCache;
 import uk.gov.justice.services.core.dispatcher.DispatcherFactory;
 import uk.gov.justice.services.core.dispatcher.EnvelopePayloadTypeConverter;
 import uk.gov.justice.services.core.dispatcher.JsonEnvelopeRepacker;
+import uk.gov.justice.services.core.interceptor.DefaultInterceptorChainProcessor;
 import uk.gov.justice.services.core.interceptor.InterceptorCache;
+import uk.gov.justice.services.core.interceptor.InterceptorChainProcessor;
 import uk.gov.justice.services.core.interceptor.InterceptorChainProcessorProducer;
 import uk.gov.justice.services.event.sourcing.subscription.DefaultSubscriptionManager;
+import uk.gov.justice.services.event.sourcing.subscription.ServiceComponentLiteral;
 import uk.gov.justice.services.event.sourcing.subscription.SubscriptionManagerProducer;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
 import uk.gov.justice.services.eventsourcing.source.core.annotation.EventSourceName;
@@ -50,16 +53,17 @@ import org.junit.runner.RunWith;
         SubscriptionManagerProducer.class,
         SubscriptionDescriptorDefinitionRegistryProducer.class,
         QualifierAnnotationExtractor.class,
-        InterceptorChainProcessorProducer.class,
         DispatcherCache.class,
         InterceptorCache.class,
         LoggerProducer.class,
         DispatcherFactory.class,
         JsonEnvelopeRepacker.class,
         EnvelopePayloadTypeConverter.class,
-
+        ServiceComponentLiteral.class,
+        DefaultInterceptorChainProcessor.class,
         SubscriptionManagerProducerIT.TestEventSourceProducer.class,
-        SubscriptionManagerProducerIT.TestClass.class
+        SubscriptionManagerProducerIT.TestClass.class,
+        SubscriptionManagerProducerIT.TestInterceptorChainProcessorProducer.class
 })
 public class SubscriptionManagerProducerIT {
 
@@ -67,9 +71,13 @@ public class SubscriptionManagerProducerIT {
     private static final String EVENT_SOURCE_NAME = "private.event.source";
 
     @Inject
+    TestInterceptorChainProcessorProducer testInterceptorChainProcessorProducer;
+
+    @Inject
     TestEventSourceProducer testEventSourceProducer;
 
     @Inject
+    @ServiceComponent(EVENT_LISTENER)
     TestClass testClass;
 
     @Test
@@ -88,11 +96,10 @@ public class SubscriptionManagerProducerIT {
         assertThat(subscription.isPresent(), is(true));
         assertThat(((Subscription) subscription.get()).getName(), is(SUBSCRIPTION_NAME));
         assertThat(((Subscription) subscription.get()).getEventSourceName(), is(EVENT_SOURCE_NAME));
-
     }
 
     @ApplicationScoped
-    @Adapter(EVENT_LISTENER)
+    @ServiceComponent(EVENT_LISTENER)
     public static class TestClass {
 
         @Inject
@@ -130,4 +137,28 @@ public class SubscriptionManagerProducerIT {
         }
     }
 
+    @ApplicationScoped
+    public static class TestInterceptorChainProcessorProducer {
+
+        private InterceptorChainProcessor interceptorChainProcessor;
+
+        @Inject
+        QualifierAnnotationExtractor qualifierAnnotationExtractor;
+
+        @Produces
+        public InterceptorChainProcessor produceProcessor(final InjectionPoint injectionPoint) {
+            final ServiceComponent serviceComponent = qualifierAnnotationExtractor.getFrom(injectionPoint, ServiceComponent.class);
+
+            if (serviceComponent.value().equals(EVENT_LISTENER)) {
+                interceptorChainProcessor = mock(InterceptorChainProcessor.class);
+                return interceptorChainProcessor;
+            }
+
+            return null;
+        }
+
+        public InterceptorChainProcessor getInterceptorChainProcessor() {
+            return interceptorChainProcessor;
+        }
+    }
 }

@@ -4,11 +4,13 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.subscription.domain.builders.SubscriptionBuilder.subscription;
 
 import uk.gov.justice.services.core.cdi.QualifierAnnotationExtractor;
+import uk.gov.justice.services.core.interceptor.InterceptorChainProcessor;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
 import uk.gov.justice.services.subscription.SubscriptionManager;
 import uk.gov.justice.services.subscription.annotation.SubscriptionName;
@@ -26,6 +28,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SubscriptionManagerProducerTest {
+
+    @Mock(answer = RETURNS_DEEP_STUBS)
+    private Instance<InterceptorChainProcessor> interceptorChainProcessors;
 
     @Mock(answer = RETURNS_DEEP_STUBS)
     private Instance<EventSource> eventsourceInstance;
@@ -46,14 +51,17 @@ public class SubscriptionManagerProducerTest {
 
         final SubscriptionName subscriptionName = mock(SubscriptionName.class);
         final EventSource eventSource = mock(EventSource.class);
-        final EventSourceNameQualifier eventSourceNameQualifier = new EventSourceNameQualifier("eventSourceName");
+        final InterceptorChainProcessor interceptorChainProcessor = mock(InterceptorChainProcessor.class);
+
         final Subscription subscription = subscription()
                 .withEventSourceName("eventSourceName")
                 .withName("subscriptionName")
                 .build();
 
+        when(subscriptionDescriptorRegistry.componentName(subscription)).thenReturn("eventListener");
         when(qualifierAnnotationExtractor.getFrom(injectionPoint, SubscriptionName.class)).thenReturn(subscriptionName);
-        when(eventsourceInstance.select(eventSourceNameQualifier).get()).thenReturn(eventSource);
+        when(interceptorChainProcessors.select(any(ServiceComponentLiteral.class)).get()).thenReturn(interceptorChainProcessor);
+        when(eventsourceInstance.select(any(EventSourceNameQualifier.class)).get()).thenReturn(eventSource);
         when(subscriptionName.value()).thenReturn("subscriptionName");
         when(subscriptionDescriptorRegistry.getSubscriptionFor(subscriptionName.value())).thenReturn(subscription);
 
